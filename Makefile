@@ -1,5 +1,5 @@
 REGISTRY=ghcr.io/ev-smoke
-IMAGE_NAME=your_name
+IMAGE_NAME=example
 
 PLATFORMS := linux darwin windows
 ARCHS := amd64 arm64
@@ -41,6 +41,7 @@ image:
 	@for arch in $(ARCHS); do \
 		echo "=== Building Docker image for $(PLATFORM)/$$arch ==="; \
 		docker buildx build \
+			--no-cache \
 			--platform $(PLATFORM)/$$arch \
 			--file Dockerfile \
 			--tag $(REGISTRY)/$(IMAGE_NAME):$(PLATFORM)-$$arch-$(DOCKER_TAG) \
@@ -51,6 +52,7 @@ image:
 
 
 clean:
+	@rm -rf app* >/dev/null 2>&1 || true
 	@docker rmi -f $(shell docker images '${REGISTRY}/${IMAGE_NAME}' --format "{{.ID}}") >/dev/null 2>&1 || true
 
 help:
