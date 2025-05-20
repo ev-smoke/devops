@@ -59,7 +59,6 @@ $(foreach platform,$(PLATFORMS), \
 )
 
 image:
-	@echo "=== Building Docker image for $(PLATFORM)/$(ARCH) ==="
 	@DOCKER_BUILDKIT=1 docker buildx build \
 		--platform $(PLATFORM)/$(ARCH) \
 		--file Dockerfile \
