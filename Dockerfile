@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:alpine AS builder
+FROM --platform=$BUILDPLATFORM quay.io/projectquay/golang:1.23 AS builder
 ARG PLATFORM
 ARG ARCH
 

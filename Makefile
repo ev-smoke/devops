@@ -4,11 +4,32 @@ IMAGE_NAME=example
 PLATFORMS := linux darwin windows
 ARCHS := amd64 arm64
 
-PLATFORM ?= linux
-ARCH ?= amd64
-
 SRC_DIR := ./
 DOCKER_TAG := latest
+
+UNAME_S := $(shell uname -s)
+UNAME_M := $(shell uname -m)
+
+ifeq ($(origin PLATFORM), undefined)
+	ifeq ($(UNAME_S),Linux)
+		PLATFORM := linux
+	else ifeq ($(UNAME_S),Darwin)
+		PLATFORM := darwin
+	else
+		$(error Unsupported host platform: $(UNAME_S))
+	endif
+endif
+
+ifeq ($(origin ARCH), undefined)
+	ifeq ($(UNAME_M),x86_64)
+		ARCH := amd64
+	else ifeq ($(UNAME_M),arm64)
+		ARCH := arm64
+	else
+		$(error Unsupported host arch: $(UNAME_M))
+	endif
+endif
+
 
 build:
 	@echo "Building for $(PLATFORM)/$(ARCH) ..."
@@ -38,17 +59,18 @@ $(foreach platform,$(PLATFORMS), \
 )
 
 image:
-	@for arch in $(ARCHS); do \
-		echo "=== Building Docker image for $(PLATFORM)/$$arch ==="; \
+	@if [ "$(PLATFORM)" = "windows" ]; then \
+		echo "⚠️ Skipping Docker image build for Windows (unsupported)."; \
+	else \
+		echo "=== Building Docker image for $(PLATFORM)/$(ARCH) ==="; \
 		docker buildx build \
-			--no-cache \
-			--platform $(PLATFORM)/$$arch \
+			--platform $(PLATFORM)/$(ARCH) \
 			--file Dockerfile \
-			--tag $(REGISTRY)/$(IMAGE_NAME):$(PLATFORM)-$$arch-$(DOCKER_TAG) \
+			--tag $(REGISTRY)/$(IMAGE_NAME):$(PLATFORM)-$(ARCH)-$(DOCKER_TAG) \
 			--build-arg PLATFORM=$(PLATFORM) \
-			--build-arg ARCH=$$arch \
+			--build-arg ARCH=$(ARCH) \
 			--output type=docker .; \
-	done
+	fi
 
 
 clean:
@@ -57,9 +79,11 @@ clean:
 
 help:
 	@echo "Make OS/ARCH targets:"
-	@echo "make linux_amd64						- make linux/amd64"
-	@echo "make linux_arm64						- make linux/arm64"
-	@echo "make darwin_amd64					- make macOS/amd64"
-	@echo "make darwin_arm64					- make macOS/arm64"
-	@echo "make windows_arm64					- make windows/arm64"
-	@echo "make image							- make docker images for all platform/arch"
+	@echo "make linux_amd64            - make linux/amd64"
+	@echo "make linux_arm64            - make linux/arm64"
+	@echo "make darwin_amd64           - make macOS/amd64"
+	@echo "make darwin_arm64           - make macOS/arm64"
+	@echo "make windows_arm64          - make windows/arm64"
+	@echo
+	@echo "make image                  - build Docker image for current host platform"
+	@echo "make image PLATFORM=darwin ARCH=arm64"
