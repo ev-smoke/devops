@@ -59,18 +59,14 @@ $(foreach platform,$(PLATFORMS), \
 )
 
 image:
-	@if [ "$(PLATFORM)" = "windows" ]; then \
-		echo "⚠️ Skipping Docker image build for Windows (unsupported)."; \
-	else \
-		echo "=== Building Docker image for $(PLATFORM)/$(ARCH) ==="; \
-		docker buildx build \
-			--platform $(PLATFORM)/$(ARCH) \
-			--file Dockerfile \
-			--tag $(REGISTRY)/$(IMAGE_NAME):$(PLATFORM)-$(ARCH)-$(DOCKER_TAG) \
-			--build-arg PLATFORM=$(PLATFORM) \
-			--build-arg ARCH=$(ARCH) \
-			--output type=docker .; \
-	fi
+	@echo "=== Building Docker image for $(PLATFORM)/$(ARCH) ==="
+	@DOCKER_BUILDKIT=1 docker buildx build \
+		--platform $(PLATFORM)/$(ARCH) \
+		--file Dockerfile \
+		--tag $(REGISTRY)/$(IMAGE_NAME):$(PLATFORM)-$(ARCH)-$(DOCKER_TAG) \
+		--build-arg PLATFORM=$(PLATFORM) \
+		--build-arg ARCH=$(ARCH) \
+		--output type=docker . > /dev/null 2>&1 ; \
 
 
 clean:
