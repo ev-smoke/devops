@@ -9,4 +9,5 @@ RUN CGO_ENABLED=0 GOOS=${PLATFORM} GOARCH=${ARCH} go build -o app
 
 FROM scratch
 COPY --from=builder /src/app .
+COPY --from=alpine:latest /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 ENTRYPOINT [ "/app" ]
