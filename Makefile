@@ -1,5 +1,7 @@
 REGISTRY=ghcr.io/ev-smoke
-IMAGE_NAME=example
+APP := $(shell basename -s .git $(shell git remote get-url origin))
+VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")-$(shell git rev-parse --short HEAD)
+
 
 PLATFORMS := linux darwin windows
 ARCHS := amd64 arm64
@@ -63,15 +65,15 @@ image:
 		--no-cache \
 		--platform $(PLATFORM)/$(ARCH) \
 		--file Dockerfile \
-		--tag $(REGISTRY)/$(IMAGE_NAME):$(PLATFORM)-$(ARCH) \
+		--tag $(REGISTRY)/$(APP):$(VERSION)-$(ARCH) \
 		--build-arg PLATFORM=$(PLATFORM) \
 		--build-arg ARCH=$(ARCH) \
-		--output type=docker . > /dev/null 2>&1 ; \
+		--output type=docker .; \
 
 
 clean:
 	@rm -rf app* >/dev/null 2>&1 || true
-	@docker rmi -f $(shell docker images '${REGISTRY}/${IMAGE_NAME}' --format "{{.ID}}") >/dev/null 2>&1 || true
+	@docker rmi -f $(shell docker images '${REGISTRY}/${APP}' --format "{{.ID}}") || true
 
 help:
 	@echo "Make OS/ARCH targets:"
