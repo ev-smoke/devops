@@ -5,7 +5,6 @@ PLATFORMS := linux darwin windows
 ARCHS := amd64 arm64
 
 SRC_DIR := ./
-DOCKER_TAG := latest
 
 UNAME_S := $(shell uname -s)
 UNAME_M := $(shell uname -m)
@@ -59,10 +58,12 @@ $(foreach platform,$(PLATFORMS), \
 )
 
 image:
+	@echo "=== Building Docker image for $(PLATFORM)/$(ARCH) ==="
 	@DOCKER_BUILDKIT=1 docker buildx build \
+		--no-cache \
 		--platform $(PLATFORM)/$(ARCH) \
 		--file Dockerfile \
-		--tag $(REGISTRY)/$(IMAGE_NAME):$(PLATFORM)-$(ARCH)-$(DOCKER_TAG) \
+		--tag $(REGISTRY)/$(IMAGE_NAME):$(PLATFORM)-$(ARCH) \
 		--build-arg PLATFORM=$(PLATFORM) \
 		--build-arg ARCH=$(ARCH) \
 		--output type=docker . > /dev/null 2>&1 ; \
