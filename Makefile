@@ -61,15 +61,13 @@ $(foreach platform,$(PLATFORMS), \
 
 image:
 	@echo "=== Building Docker image for $(PLATFORM)/$(ARCH) ==="
-	@DOCKER_BUILDKIT=1 docker buildx build \
+	@DOCKER_BUILDKIT=1 docker build \
 		--no-cache \
-		--platform $(PLATFORM)/$(ARCH) \
 		--file Dockerfile \
 		--tag $(REGISTRY)/$(APP):$(VERSION)-$(ARCH) \
 		--build-arg PLATFORM=$(PLATFORM) \
 		--build-arg ARCH=$(ARCH) \
-		--output type=docker .; \
-
+		. ; \
 
 clean:
 	@rm -rf app* >/dev/null 2>&1 || true
